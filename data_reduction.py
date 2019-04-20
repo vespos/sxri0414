@@ -60,7 +60,7 @@ for nevt,evt in enumerate(dsource.events()):
 		#'wave': waveform,
 		'sig': sig,
 		'I0': I0
-		#'tt': tt
+        'tt': tt
 	}
 	
 	smldata.event(save_data)
