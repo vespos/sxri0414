@@ -18,12 +18,13 @@ dsource = ps.MPIDataSource(dstr)
 
 #h5_dir = '/reg/d/psdm/SXR/sxri0414/hdf5'
 h5_dir = './'
-fh5 = h5_dir + 'vesp_run60_anaMPI.h5'
+fh5 = h5_dir + 'test.h5'
 
 smldata = dsource.small_data(fh5, gather_interval=100) #save file
 
 for nevt,evt in enumerate(dsource.events()):
-#	if nevt==500:break
+	if nevt==50: break
+
 	if not (nevt % 100): print('Running event number {}\n'.format(nevt))
 	
 	#try:
@@ -31,7 +32,7 @@ for nevt,evt in enumerate(dsource.events()):
 
 	""" Signal """
 	det = ps.Detector('acq02')
-	res = ana.acquiris(det, evt, debug=0)
+	res = ana.acquiris(det, evt, debug=1)
 #	time, wave_smooth, x, y = ana.acquiris(det, evt, debug=1)
 	sig = res[0]['amplitude']
 	
@@ -59,7 +60,7 @@ for nevt,evt in enumerate(dsource.events()):
 		'dl': dl,
 		#'wave': waveform,
 		'sig': sig,
-		'I0': I0
+		'I0': I0,
         'tt': tt
 	}
 	
