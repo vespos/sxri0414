@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
+from scipy.stats import binned_statistic
 import IPython
 #from lmfit import Model
 
@@ -189,6 +190,7 @@ def linearize_energy_lin(I, I0, energy):
 
 
 def get_svd_background(data, return_bkg=False):
+    """ Looks for dropped shots (event code 162) and perform svd on them to get the eigenbackgrounds """
     dropshots = data['evr']['code_162'].astype(bool)
     bkgs = data['timeToolOpal'][dropshots, :]
     u,s,v = np.linalg.svd(bkgs)
@@ -206,6 +208,51 @@ def subtract_svd_background(data, mask, svd_size=5):
     bkgs = np.matmul(fit,v[:svd_size])
     return ttdata - bkgs
 
+
+
+def binData(data, bin_centers=None, bin_key='dl', statkeys = None,
+            statfuns=[np.nanmean,np.nanmedian,np.nanstd,len], statlbls=['_mean','_median','_std','_count']):
+    """
+    data:
+        Pandas dataframe
+    bin_key: 
+        key in df to bin (e.g. jitter corrected delay). If None or not found: uses first key (with warning)
+    bin_edges,bin_size: 
+        definition of bins. If None, bins to the unique values.
+    statkeys:
+        keys for which to apply statistics; None means all (default).
+    statfuns/statlbls:
+        function list/string label list of non-weighted statistics functions to be applied.
+        
+    Result are stored in a dictionary whose columns are named by the original key + the statistic label.
+    """
+    
+    if statkeys is None:
+        statkeys=data.keys()
+        
+    if bin_centers is None:
+        bin_centers = np.unique(data[bin_key])
+    
+    bin_centers = np.asarray(bin_centers)
+        
+    dict_out = dict()
+    bin_name = bin_key
+    
+    """ Compute bin edges """
+    binDiff = np.diff(bin_centers)
+    binDiff = np.append(binDiff, binDiff[-1])
+    bin_edges = bin_centers+binDiff/2
+    bin_edges = np.append(bin_edges[0]-binDiff[0], bin_edges)
+    
+    dict_out[bin_key] = bin_centers
+        
+    for nkey,key in enumerate(statkeys):
+        for fun,lbl in zip(statfuns,statlbls):
+            stat, temp, bin_number = binned_statistic(data[bin_key], data[key], 
+                                                      statistic=fun, bins=bin_edges)
+            dict_out[key+lbl] = stat
+    
+    return dict_out, bin_edges
 
 
 
