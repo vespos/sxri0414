@@ -241,18 +241,18 @@ def binData(data, bin_centers=None, bin_key='dl', statkeys = None,
     """ Compute bin edges """
     binDiff = np.diff(bin_centers)
     binDiff = np.append(binDiff, binDiff[-1])
-    bin_edges = bin_centers+binDiff/2
-    bin_edges = np.append(bin_edges[0]-binDiff[0], bin_edges)
+    binEdges = bin_centers+binDiff/2
+    binEdges = np.append(binEdges[0]-binDiff[0], binEdges)
     
     dict_out[bin_key] = bin_centers
         
     for nkey,key in enumerate(statkeys):
         for fun,lbl in zip(statfuns,statlbls):
             stat, temp, bin_number = binned_statistic(data[bin_key], data[key], 
-                                                      statistic=fun, bins=bin_edges)
+                                                      statistic=fun, bins=binEdges)
             dict_out[key+lbl] = stat
     
-    return dict_out, bin_edges
+    return dict_out, binEdges
 
 
 
