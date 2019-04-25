@@ -6,7 +6,6 @@ from scipy.stats import binned_statistic
 import IPython
 #from lmfit import Model
 
-# test
 def parabola(x,a,x0,offset):
 	return a*(x-x0)**2+offset
 
